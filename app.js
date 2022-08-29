@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const express = require('express');
 const ejs = require("ejs");
 const mongoose = require('mongoose');
-const encrypt = require('mongoose-encryption')
+const md5 = require('md5');
 
 const app = express();
 
@@ -17,7 +17,6 @@ const userSchema = new mongoose.Schema({
     password: String
 });
 
-userSchema.plugin(encrypt, {secret:process.env.SECRET, encryptedFields:['password']});
 
 const user = new mongoose.model("User", userSchema)
 
@@ -34,7 +33,7 @@ app.get('/register', function (req,res) {
 app.post('/register', function (req,res) {
     const newuser = new user({
         email:req.body.username,
-        password:req.body.password
+        password:md5(req.body.password)
     });
     newuser.save(function (err) {
         if(err){
@@ -46,7 +45,7 @@ app.post('/register', function (req,res) {
 });
 app.post("/login", function (req,res) {
     const username = req.body.username;
-    const password = req.body.password;
+    const password = md5(req.body.password);
 
     user.findOne({email: username}, function(err, founduser) {
         if(err){
@@ -65,4 +64,3 @@ app.post("/login", function (req,res) {
 
 app.listen(3000, function() {
 console.log("server up on port 3000")});
-// thisisourlittlesecret
